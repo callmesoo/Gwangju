@@ -885,18 +885,29 @@
 
         // Body: all lines of this slide block
         if (displaySlides[idx].trim()) {
-          slide.addText(displaySlides[idx], {
+          const pAlign = alignMap[state.textAlign] || 'ctr';
+          const lineArr = displaySlides[idx].split('\n');
+          const textObjs = [];
+          lineArr.forEach((line, i) => {
+            textObjs.push({
+              text: line,
+              options: {
+                align: pAlign,
+                fontFace: state.fontFamily,
+                fontSize: state.fontSize,
+                color: state.fontColor.replace('#', ''),
+                lineSpacingMultiple: state.lineHeight,
+                shadow: { type: 'outer', blur: 6, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
+                breakLine: i < lineArr.length - 1,
+              },
+            });
+          });
+          slide.addText(textObjs, {
             x: 0.3,
             y: 0,
             w: dim.w - 0.6,
             h: dim.h,
-            align: alignMap[state.textAlign] || 'ctr',
             valign: 'middle',
-            fontFace: state.fontFamily,
-            fontSize: state.fontSize,
-            color: state.fontColor.replace('#', ''),
-            lineSpacingMultiple: state.lineHeight,
-            shadow: { type: 'outer', blur: 6, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
           });
         }
       }

@@ -606,18 +606,43 @@
       const overlay = document.createElement('div');
       overlay.className = 'slide-overlay';
 
-      const textEl = document.createElement('div');
-      textEl.className = 'slide-text-preview';
-      textEl.style.fontFamily = state.fontFamily;
-      textEl.style.color = state.fontColor;
-      textEl.style.fontSize = Math.max(9, Math.round(state.fontSize * 0.38)) + 'px';
-      textEl.style.textAlign = state.textAlign;
-      textEl.style.fontWeight = '600';
-      textEl.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
-      textEl.style.wordBreak = 'break-word';
-      textEl.textContent = slideText;
+      const lines = slideText.split('\n');
+      const titleLine = lines[0];
+      const bodyLines = lines.slice(1).join('\n');
 
-      overlay.appendChild(textEl);
+      // Title: first line only
+      const titleEl = document.createElement('div');
+      titleEl.style.fontFamily = state.fontFamily;
+      titleEl.style.color = state.fontColor;
+      titleEl.style.fontSize = Math.max(10, Math.round(state.fontSize * 0.38)) + 'px';
+      titleEl.style.textAlign = state.textAlign;
+      titleEl.style.fontWeight = '700';
+      titleEl.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
+      titleEl.style.wordBreak = 'break-word';
+      titleEl.style.width = '100%';
+      titleEl.textContent = titleLine;
+      overlay.appendChild(titleEl);
+
+      // Body: remaining lines
+      if (bodyLines.trim()) {
+        const bodyEl = document.createElement('div');
+        bodyEl.style.fontFamily = state.fontFamily;
+        bodyEl.style.color = state.fontColor;
+        bodyEl.style.fontSize = Math.max(7, Math.round(state.fontSize * 0.38 * 0.55)) + 'px';
+        bodyEl.style.textAlign = state.textAlign;
+        bodyEl.style.fontWeight = '400';
+        bodyEl.style.textShadow = '0 1px 3px rgba(0,0,0,0.6)';
+        bodyEl.style.wordBreak = 'break-word';
+        bodyEl.style.width = '100%';
+        bodyEl.style.marginTop = '4px';
+        bodyEl.style.opacity = '0.9';
+        bodyEl.style.overflow = 'hidden';
+        bodyEl.style.display = '-webkit-box';
+        bodyEl.style.webkitLineClamp = '3';
+        bodyEl.style.webkitBoxOrient = 'vertical';
+        bodyEl.textContent = bodyLines;
+        overlay.appendChild(bodyEl);
+      }
       card.appendChild(overlay);
 
       const numEl = document.createElement('div');
@@ -801,17 +826,18 @@
 
         // Text
         const lines = slides[idx].split('\n');
-        const firstLine = lines[0];
-        const restLines = lines.slice(1).join('\n');
+        const titleLine = lines[0];
+        const bodyText = lines.slice(1).join('\n');
+        const hasBody = bodyText.trim().length > 0;
 
         const alignMap = { left: 'left', center: 'ctr', right: 'right' };
 
-        // Title (first line, larger)
-        slide.addText(firstLine, {
+        // Title: first line only
+        slide.addText(titleLine, {
           x: 0.5,
-          y: dim.h * 0.3,
+          y: hasBody ? dim.h * 0.25 : dim.h * 0.35,
           w: dim.w - 1,
-          h: dim.h * 0.25,
+          h: dim.h * 0.28,
           align: alignMap[state.textAlign] || 'ctr',
           fontFace: state.fontFamily,
           fontSize: state.fontSize,
@@ -820,13 +846,13 @@
           shadow: { type: 'outer', blur: 6, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
         });
 
-        // Body (remaining lines)
-        if (restLines.trim()) {
-          slide.addText(restLines, {
+        // Body: all remaining lines
+        if (hasBody) {
+          slide.addText(bodyText, {
             x: 0.5,
-            y: dim.h * 0.58,
+            y: dim.h * 0.56,
             w: dim.w - 1,
-            h: dim.h * 0.35,
+            h: dim.h * 0.38,
             align: alignMap[state.textAlign] || 'ctr',
             fontFace: state.fontFamily,
             fontSize: Math.round(state.fontSize * 0.55),

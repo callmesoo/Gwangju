@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>텍스트 → PPT 변환기</title>
+  <title>Text → PPT Converter</title>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -368,7 +368,7 @@
 
 <header>
   <span>🎞️</span>
-  <h1>텍스트 → PPT 변환기</h1>
+  <h1>Text → PPT Converter</h1>
 </header>
 
 <div class="main">
@@ -376,28 +376,28 @@
   <div class="panel-left">
 
     <div class="field-group">
-      <div class="section-label">슬라이드 텍스트</div>
-      <textarea id="inputText" placeholder="빈 줄로 슬라이드를 구분합니다.
+      <div class="section-label">Slide Text</div>
+      <textarea id="inputText" placeholder="Separate slides with a blank line.
 
-예시:
-첫 번째 슬라이드 제목
-부제목이나 내용
+Example:
+Presentation Title
+Subtitle or content
 
-두 번째 슬라이드
-내용을 입력하세요
+Second Slide
+Enter your content here
 
-세 번째 슬라이드"></textarea>
+Third Slide"></textarea>
     </div>
 
     <div class="sep"></div>
 
     <!-- Font -->
     <div class="field-group">
-      <div class="section-label">폰트</div>
+      <div class="section-label">Font</div>
       <select id="fontFamily">
-        <option value="Malgun Gothic">맑은 고딕</option>
-        <option value="NanumGothic">나눔고딕</option>
-        <option value="NanumMyeongjo">나눔명조</option>
+        <option value="Malgun Gothic">Malgun Gothic</option>
+        <option value="NanumGothic">NanumGothic</option>
+        <option value="NanumMyeongjo">NanumMyeongjo</option>
         <option value="Arial">Arial</option>
         <option value="Calibri" selected>Calibri</option>
         <option value="Times New Roman">Times New Roman</option>
@@ -410,7 +410,7 @@
 
     <!-- Font size -->
     <div class="field-group">
-      <div class="section-label">글자 크기</div>
+      <div class="section-label">Font Size</div>
       <div class="range-row">
         <input type="range" id="fontSize" min="16" max="72" value="32" />
         <span class="range-val" id="fontSizeVal">32</span>
@@ -419,7 +419,7 @@
 
     <!-- Line height -->
     <div class="field-group">
-      <div class="section-label">줄 간격</div>
+      <div class="section-label">Line Spacing</div>
       <div class="range-row">
         <input type="range" id="lineHeight" min="1.0" max="3.0" step="0.1" value="1.5" />
         <span class="range-val" id="lineHeightVal">1.5</span>
@@ -428,24 +428,24 @@
 
     <!-- Font color -->
     <div class="field-group">
-      <div class="section-label">글자 색상</div>
+      <div class="section-label">Font Color</div>
       <div class="color-row">
         <input type="color" id="fontColor" value="#ffffff" />
         <select id="fontColorPreset">
-          <option value="#ffffff">흰색</option>
-          <option value="#000000">검정</option>
-          <option value="#ffdd57">노랑</option>
-          <option value="#48dbfb">하늘색</option>
-          <option value="#ff6b6b">빨강</option>
-          <option value="#1dd1a1">초록</option>
-          <option value="#a29bfe">보라</option>
+          <option value="#ffffff">White</option>
+          <option value="#000000">Black</option>
+          <option value="#ffdd57">Yellow</option>
+          <option value="#48dbfb">Sky Blue</option>
+          <option value="#ff6b6b">Red</option>
+          <option value="#1dd1a1">Green</option>
+          <option value="#a29bfe">Purple</option>
         </select>
       </div>
     </div>
 
     <!-- Text align -->
     <div class="field-group">
-      <div class="section-label">텍스트 정렬</div>
+      <div class="section-label">Text Alignment</div>
       <div class="align-group">
         <button class="align-btn active" data-align="left">☰</button>
         <button class="align-btn active" data-align="center" style="background:#e94560;border-color:#e94560;color:#fff">≡</button>
@@ -457,61 +457,61 @@
 
     <!-- Background: Gradient presets -->
     <div class="field-group">
-      <div class="section-label">배경 색상 프리셋</div>
+      <div class="section-label">Background Gradient Presets</div>
       <div class="gradient-presets" id="gradPresets"></div>
     </div>
 
     <!-- Custom background color -->
     <div class="field-group">
-      <div class="section-label">배경 단색 (직접 선택)</div>
+      <div class="section-label">Solid Background Color</div>
       <div class="color-row">
         <input type="color" id="bgColor" value="#1a1a2e" />
         <select id="bgColorPreset">
-          <option value="#1a1a2e">네이비 다크</option>
-          <option value="#000000">검정</option>
-          <option value="#ffffff">흰색</option>
-          <option value="#2c3e50">다크 블루</option>
-          <option value="#27ae60">초록</option>
-          <option value="#8e44ad">보라</option>
-          <option value="#c0392b">빨강</option>
+          <option value="#1a1a2e">Navy Dark</option>
+          <option value="#000000">Black</option>
+          <option value="#ffffff">White</option>
+          <option value="#2c3e50">Dark Blue</option>
+          <option value="#27ae60">Green</option>
+          <option value="#8e44ad">Purple</option>
+          <option value="#c0392b">Red</option>
         </select>
       </div>
     </div>
 
     <!-- Background image -->
     <div class="field-group">
-      <div class="section-label">배경 이미지</div>
+      <div class="section-label">Background Image</div>
       <label class="upload-box" for="bgImageInput">
         <span style="font-size:1.5rem">🖼️</span>
-        <p>클릭하여 이미지를 업로드<br>(여러 장 선택 가능)</p>
+        <p>Click to upload image(s)<br>(multiple files supported)</p>
         <input type="file" id="bgImageInput" accept="image/*" multiple />
       </label>
       <div class="thumb-preview" id="thumbPreview"></div>
-      <div class="clear-bg" id="clearBg" style="display:none">✕ 이미지 제거</div>
+      <div class="clear-bg" id="clearBg" style="display:none">✕ Remove Image</div>
     </div>
 
     <!-- Slide size -->
     <div class="field-group">
-      <div class="section-label">슬라이드 크기</div>
+      <div class="section-label">Slide Size</div>
       <select id="slideSize">
-        <option value="LAYOUT_16x9" selected>와이드 (16:9)</option>
-        <option value="LAYOUT_4x3">표준 (4:3)</option>
+        <option value="LAYOUT_16x9" selected>Widescreen (16:9)</option>
+        <option value="LAYOUT_4x3">Standard (4:3)</option>
         <option value="LAYOUT_16x10">16:10</option>
       </select>
     </div>
 
-    <button class="btn-download" id="btnDownload">⬇ PPT 다운로드</button>
+    <button class="btn-download" id="btnDownload">⬇ Download PPT</button>
 
   </div>
 
   <!-- ── Right Panel: Preview ── -->
   <div class="panel-right">
     <div class="preview-header">
-      <h2>미리보기</h2>
-      <span class="slide-count" id="slideCount">슬라이드 0장</span>
+      <h2>Preview</h2>
+      <span class="slide-count" id="slideCount">0 slides</span>
     </div>
     <div class="slides-container" id="slidesContainer">
-      <div class="empty-state">텍스트를 입력하면<br>슬라이드 미리보기가 표시됩니다.</div>
+      <div class="empty-state">Enter text to see<br>a live slide preview.</div>
     </div>
   </div>
 </div>
@@ -599,10 +599,10 @@
     const globalTitle = rawLines[0] || '';
     const bodyText = rawLines.slice(1).join('\n');
     const slides = parseSlides(bodyText);
-    slideCount.textContent = `슬라이드 ${slides.length}장`;
+    slideCount.textContent = `${slides.length} slide${slides.length !== 1 ? 's' : ''}`;
 
     if (slides.length === 0 && !globalTitle.trim()) {
-      slidesContainer.innerHTML = '<div class="empty-state">텍스트를 입력하면<br>슬라이드 미리보기가 표시됩니다.</div>';
+      slidesContainer.innerHTML = '<div class="empty-state">Enter text to see<br>a live slide preview.</div>';
       return;
     }
 
@@ -789,12 +789,12 @@
     thumbPreview.innerHTML = '';
     clearBg.style.display = state.bgImages.length ? 'block' : 'none';
 
-    // "모두 순환" option
+    // "Cycle all" option
     if (state.bgImages.length > 1) {
       const allThumb = document.createElement('div');
       allThumb.style.cssText = 'width:60px;height:38px;border-radius:4px;background:linear-gradient(135deg,#e94560,#4286f4);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;cursor:pointer;border:2px solid transparent;flex-shrink:0';
-      allThumb.title = '슬라이드별로 이미지 순환';
-      allThumb.textContent = '순환';
+      allThumb.title = 'Cycle images per slide';
+      allThumb.textContent = 'Cycle';
       allThumb.dataset.idx = '-2';
       if (state.selectedBgIndex === -2) allThumb.style.borderColor = '#e94560';
       allThumb.addEventListener('click', () => {
@@ -827,11 +827,11 @@
     const slides = parseSlides(bodyRaw);
 
     if (!globalTitle.trim() && slides.length === 0) {
-      alert('텍스트를 입력해주세요.');
+      alert('Please enter some text first.');
       return;
     }
 
-    btnDownload.textContent = '⏳ 생성 중...';
+    btnDownload.textContent = '⏳ Generating...';
     btnDownload.disabled = true;
 
     try {
@@ -912,12 +912,12 @@
         }
       }
 
-      await pptx.writeFile({ fileName: '슬라이드.pptx' });
+      await pptx.writeFile({ fileName: 'slides.pptx' });
     } catch (err) {
       console.error(err);
-      alert('PPT 생성 중 오류가 발생했습니다: ' + err.message);
+      alert('Error generating PPT: ' + err.message);
     } finally {
-      btnDownload.textContent = '⬇ PPT 다운로드';
+      btnDownload.textContent = '⬇ Download PPT';
       btnDownload.disabled = false;
     }
   });

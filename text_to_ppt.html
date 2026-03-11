@@ -583,16 +583,22 @@
 
   // ── Preview rendering ──
   function renderPreview() {
-    const slides = parseSlides(inputText.value);
+    const rawLines = inputText.value.split('\n');
+    const globalTitle = rawLines[0] || '';
+    const bodyText = rawLines.slice(1).join('\n');
+    const slides = parseSlides(bodyText);
     slideCount.textContent = `슬라이드 ${slides.length}장`;
 
-    if (slides.length === 0) {
+    if (slides.length === 0 && !globalTitle.trim()) {
       slidesContainer.innerHTML = '<div class="empty-state">텍스트를 입력하면<br>슬라이드 미리보기가 표시됩니다.</div>';
       return;
     }
 
+    // If there's a title but no body slides yet, show at least one slide
+    const displaySlides = slides.length > 0 ? slides : [''];
+
     slidesContainer.innerHTML = '';
-    slides.forEach((slideText, idx) => {
+    displaySlides.forEach((slideText, idx) => {
       const card = document.createElement('div');
       card.className = 'slide-card';
 
@@ -602,47 +608,61 @@
       applyBackground(bg, idx);
       card.appendChild(bg);
 
-      // Overlay text
+      // Overlay
       const overlay = document.createElement('div');
       overlay.className = 'slide-overlay';
+      overlay.style.position = 'absolute';
+      overlay.style.inset = '0';
+      overlay.style.padding = '10px 14px';
 
-      const lines = slideText.split('\n');
-      const titleLine = lines[0];
-      const bodyLines = lines.slice(1).join('\n');
+      // Global title: top-right on slide 1 only
+      if (idx === 0 && globalTitle.trim()) {
+        const titleEl = document.createElement('div');
+        titleEl.style.position = 'absolute';
+        titleEl.style.top = '7px';
+        titleEl.style.right = '10px';
+        titleEl.style.fontFamily = state.fontFamily;
+        titleEl.style.color = state.fontColor;
+        titleEl.style.fontSize = Math.max(8, Math.round(state.fontSize * 0.28)) + 'px';
+        titleEl.style.fontWeight = '700';
+        titleEl.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
+        titleEl.style.maxWidth = '60%';
+        titleEl.style.textAlign = 'right';
+        titleEl.style.wordBreak = 'break-word';
+        titleEl.textContent = globalTitle;
+        overlay.appendChild(titleEl);
+      }
 
-      // Title: first line only
-      const titleEl = document.createElement('div');
-      titleEl.style.fontFamily = state.fontFamily;
-      titleEl.style.color = state.fontColor;
-      titleEl.style.fontSize = Math.max(10, Math.round(state.fontSize * 0.38)) + 'px';
-      titleEl.style.textAlign = state.textAlign;
-      titleEl.style.fontWeight = '700';
-      titleEl.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
-      titleEl.style.wordBreak = 'break-word';
-      titleEl.style.width = '100%';
-      titleEl.textContent = titleLine;
-      overlay.appendChild(titleEl);
-
-      // Body: remaining lines
-      if (bodyLines.trim()) {
+      // Body text
+      if (slideText.trim()) {
         const bodyEl = document.createElement('div');
-        bodyEl.style.fontFamily = state.fontFamily;
-        bodyEl.style.color = state.fontColor;
-        bodyEl.style.fontSize = Math.max(7, Math.round(state.fontSize * 0.38 * 0.55)) + 'px';
-        bodyEl.style.textAlign = state.textAlign;
-        bodyEl.style.fontWeight = '400';
-        bodyEl.style.textShadow = '0 1px 3px rgba(0,0,0,0.6)';
-        bodyEl.style.wordBreak = 'break-word';
-        bodyEl.style.width = '100%';
-        bodyEl.style.marginTop = '4px';
-        bodyEl.style.opacity = '0.9';
-        bodyEl.style.overflow = 'hidden';
-        bodyEl.style.display = '-webkit-box';
-        bodyEl.style.webkitLineClamp = '3';
-        bodyEl.style.webkitBoxOrient = 'vertical';
-        bodyEl.textContent = bodyLines;
+        bodyEl.style.position = 'absolute';
+        bodyEl.style.inset = '0';
+        bodyEl.style.display = 'flex';
+        bodyEl.style.alignItems = 'center';
+        bodyEl.style.justifyContent =
+          state.textAlign === 'left' ? 'flex-start' :
+          state.textAlign === 'right' ? 'flex-end' : 'center';
+        bodyEl.style.padding = '14px';
+
+        const inner = document.createElement('div');
+        inner.style.fontFamily = state.fontFamily;
+        inner.style.color = state.fontColor;
+        inner.style.fontSize = Math.max(9, Math.round(state.fontSize * 0.38)) + 'px';
+        inner.style.textAlign = state.textAlign;
+        inner.style.fontWeight = '500';
+        inner.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
+        inner.style.wordBreak = 'break-word';
+        inner.style.width = '100%';
+        inner.style.overflow = 'hidden';
+        inner.style.display = '-webkit-box';
+        inner.style.webkitLineClamp = '5';
+        inner.style.webkitBoxOrient = 'vertical';
+        inner.textContent = slideText;
+        bodyEl.appendChild(inner);
         overlay.appendChild(bodyEl);
       }
+
       card.appendChild(overlay);
 
       const numEl = document.createElement('div');
@@ -784,8 +804,12 @@
 
   // ── Download PPT ──
   btnDownload.addEventListener('click', async () => {
-    const slides = parseSlides(inputText.value);
-    if (slides.length === 0) {
+    const rawLines = inputText.value.split('\n');
+    const globalTitle = rawLines[0] || '';
+    const bodyRaw = rawLines.slice(1).join('\n');
+    const slides = parseSlides(bodyRaw);
+
+    if (!globalTitle.trim() && slides.length === 0) {
       alert('텍스트를 입력해주세요.');
       return;
     }
@@ -806,7 +830,10 @@
       pptx.defineLayout({ name: 'CUSTOM', width: dim.w, height: dim.h });
       pptx.layout = 'CUSTOM';
 
-      for (let idx = 0; idx < slides.length; idx++) {
+      const displaySlides = slides.length > 0 ? slides : [''];
+      const alignMap = { left: 'left', center: 'ctr', right: 'right' };
+
+      for (let idx = 0; idx < displaySlides.length; idx++) {
         const slide = pptx.addSlide();
 
         // Background
@@ -816,7 +843,6 @@
             : state.selectedBgIndex;
           slide.background = { data: state.bgImages[imgIdx].dataUrl };
         } else if (state.gradientColor) {
-          // pptxgenjs supports solid fill; approximate gradient with start color
           const hex = state.gradientColor[0].replace('#', '');
           slide.background = { fill: hex };
         } else {
@@ -824,40 +850,35 @@
           slide.background = { fill: hex };
         }
 
-        // Text
-        const lines = slides[idx].split('\n');
-        const titleLine = lines[0];
-        const bodyText = lines.slice(1).join('\n');
-        const hasBody = bodyText.trim().length > 0;
-
-        const alignMap = { left: 'left', center: 'ctr', right: 'right' };
-
-        // Title: first line only
-        slide.addText(titleLine, {
-          x: 0.5,
-          y: hasBody ? dim.h * 0.25 : dim.h * 0.35,
-          w: dim.w - 1,
-          h: dim.h * 0.28,
-          align: alignMap[state.textAlign] || 'ctr',
-          fontFace: state.fontFamily,
-          fontSize: state.fontSize,
-          color: state.fontColor.replace('#', ''),
-          bold: true,
-          shadow: { type: 'outer', blur: 6, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
-        });
-
-        // Body: all remaining lines
-        if (hasBody) {
-          slide.addText(bodyText, {
-            x: 0.5,
-            y: dim.h * 0.56,
-            w: dim.w - 1,
-            h: dim.h * 0.38,
-            align: alignMap[state.textAlign] || 'ctr',
+        // Global title: top-right on slide 1 only
+        if (idx === 0 && globalTitle.trim()) {
+          slide.addText(globalTitle, {
+            x: dim.w * 0.5,
+            y: 0.15,
+            w: dim.w * 0.48,
+            h: 0.6,
+            align: 'right',
             fontFace: state.fontFamily,
-            fontSize: Math.round(state.fontSize * 0.55),
+            fontSize: Math.round(state.fontSize * 0.5),
             color: state.fontColor.replace('#', ''),
-            shadow: { type: 'outer', blur: 4, offset: 1, angle: 45, color: '000000', opacity: 0.4 },
+            bold: true,
+            shadow: { type: 'outer', blur: 5, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
+          });
+        }
+
+        // Body: all lines of this slide block
+        if (displaySlides[idx].trim()) {
+          slide.addText(displaySlides[idx], {
+            x: 0.5,
+            y: dim.h * 0.25,
+            w: dim.w - 1,
+            h: dim.h * 0.6,
+            align: alignMap[state.textAlign] || 'ctr',
+            valign: 'middle',
+            fontFace: state.fontFamily,
+            fontSize: state.fontSize,
+            color: state.fontColor.replace('#', ''),
+            shadow: { type: 'outer', blur: 6, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
           });
         }
       }

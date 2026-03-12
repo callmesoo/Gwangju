@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text → PPT Converter</title>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #16213e, #0f3460);
+      padding: 20px 32px;
+      border-bottom: 1px solid #e94560;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      color: #e94560;
+      letter-spacing: 1px;
+    }
+
+    header span {
+      font-size: 1.8rem;
+    }
+
+    .main {
+      display: flex;
+      gap: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Left Panel ── */
+    .panel-left {
+      width: 380px;
+      min-width: 280px;
+      background: #16213e;
+      border-right: 1px solid #0f3460;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 220px;
+      background: #0f3460;
+      border: 1px solid #1a4a8a;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      padding: 12px;
+      resize: vertical;
+      outline: none;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: #e94560; }
+
+    textarea::placeholder { color: #4a6080; }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    select, input[type="range"], input[type="color"] {
+      width: 100%;
+      background: #0f3460;
+      border: 1px solid #1a4a8a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:hover, select:focus { border-color: #e94560; }
+
+    .color-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="color"] {
+      width: 48px;
+      height: 38px;
+      padding: 2px 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      padding: 0;
+      height: 6px;
+      -webkit-appearance: none;
+      border-radius: 3px;
+      background: #1a4a8a;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e94560;
+      cursor: pointer;
+    }
+
+    .range-val {
+      width: 36px;
+      text-align: right;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    /* alignment buttons */
+    .align-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .align-btn {
+      flex: 1;
+      padding: 8px 0;
+      border: 1px solid #1a4a8a;
+      border-radius: 6px;
+      background: #0f3460;
+      color: #aaa;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .align-btn.active, .align-btn:hover {
+      background: #e94560;
+      color: #fff;
+      border-color: #e94560;
+    }
+
+    /* image upload */
+    .upload-box {
+      border: 2px dashed #1a4a8a;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .upload-box:hover { border-color: #e94560; background: #0f3460; }
+
+    .upload-box input { display: none; }
+
+    .upload-box p { font-size: 0.85rem; color: #888; margin-top: 6px; }
+
+    .thumb-preview {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .thumb-preview img {
+      width: 60px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .thumb-preview img.selected { border-color: #e94560; }
+
+    .clear-bg {
+      font-size: 0.78rem;
+      color: #e94560;
+      cursor: pointer;
+      text-align: right;
+      margin-top: 2px;
+    }
+
+    .clear-bg:hover { text-decoration: underline; }
+
+    /* Gradient presets */
+    .gradient-presets {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .grad-swatch {
+      width: 40px;
+      height: 28px;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+
+    .grad-swatch:hover { transform: scale(1.1); }
+    .grad-swatch.selected { border-color: #e94560; }
+
+    /* download button */
+    .btn-download {
+      margin-top: auto;
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #e94560, #c0392b);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-download:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-download:active { transform: translateY(0); }
+
+    /* ── Right Panel: Preview ── */
+    .panel-right {
+      flex: 1;
+      background: #12192b;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preview-header h2 {
+      font-size: 1rem;
+      color: #888;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .slide-count {
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .slides-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .slide-card {
+      position: relative;
+      width: 280px;
+      height: 157px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border: 2px solid #1a4a8a;
+      transition: border-color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .slide-card:hover {
+      border-color: #e94560;
+      transform: translateY(-3px);
+    }
+
+    .slide-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .slide-number {
+      position: absolute;
+      bottom: 6px;
+      right: 9px;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .slide-text-preview {
+      width: 100%;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
+      line-height: 1.4;
+    }
+
+    .empty-state {
+      color: #3a4a6a;
+      font-size: 0.95rem;
+      margin: auto;
+      text-align: center;
+      line-height: 2;
+    }
+
+    /* Separator */
+    .sep {
+      height: 1px;
+      background: #1a2a4a;
+      margin: 2px 0;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a1020; }
+    ::-webkit-scrollbar-thumb { background: #1a4a8a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #e94560; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>🎞️</span>
+  <h1>Text → PPT Converter</h1>
+</header>
+
+<div class="main">
+  <!-- ── Left Panel ── -->
+  <div class="panel-left">
+
+    <div class="field-group">
+      <div class="section-label">Slide Text</div>
+      <textarea id="inputText" placeholder="Separate slides with a blank line.
+
+Example:
+Presentation Title
+Subtitle or content
+
+Second Slide
+Enter your content here
+
+Third Slide"></textarea>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Font -->
+    <div class="field-group">
+      <div class="section-label">Font</div>
+      <select id="fontFamily">
+        <option value="Malgun Gothic">Malgun Gothic</option>
+        <option value="NanumGothic">NanumGothic</option>
+        <option value="NanumMyeongjo">NanumMyeongjo</option>
+        <option value="Arial">Arial</option>
+        <option value="Calibri" selected>Calibri</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Trebuchet MS">Trebuchet MS</option>
+        <option value="Comic Sans MS">Comic Sans MS</option>
+      </select>
+    </div>
+
+    <!-- Font size -->
+    <div class="field-group">
+      <div class="section-label">Font Size</div>
+      <div class="range-row">
+        <input type="range" id="fontSize" min="16" max="72" value="32" />
+        <span class="range-val" id="fontSizeVal">32</span>
+      </div>
+    </div>
+
+    <!-- Line height -->
+    <div class="field-group">
+      <div class="section-label">Line Spacing</div>
+      <div class="range-row">
+        <input type="range" id="lineHeight" min="1.0" max="3.0" step="0.1" value="1.5" />
+        <span class="range-val" id="lineHeightVal">1.5</span>
+      </div>
+    </div>
+
+    <!-- Font color -->
+    <div class="field-group">
+      <div class="section-label">Font Color</div>
+      <div class="color-row">
+        <input type="color" id="fontColor" value="#ffffff" />
+        <select id="fontColorPreset">
+          <option value="#ffffff">White</option>
+          <option value="#000000">Black</option>
+          <option value="#ffdd57">Yellow</option>
+          <option value="#48dbfb">Sky Blue</option>
+          <option value="#ff6b6b">Red</option>
+          <option value="#1dd1a1">Green</option>
+          <option value="#a29bfe">Purple</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Text align -->
+    <div class="field-group">
+      <div class="section-label">Text Alignment</div>
+      <div class="align-group">
+        <button class="align-btn active" data-align="left">☰</button>
+        <button class="align-btn active" data-align="center" style="background:#e94560;border-color:#e94560;color:#fff">≡</button>
+        <button class="align-btn" data-align="right">≡</button>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Background: Gradient presets -->
+    <div class="field-group">
+      <div class="section-label">Background Gradient Presets</div>
+      <div class="gradient-presets" id="gradPresets"></div>
+    </div>
+
+    <!-- Custom background color -->
+    <div class="field-group">
+      <div class="section-label">Solid Background Color</div>
+      <div class="color-row">
+        <input type="color" id="bgColor" value="#1a1a2e" />
+        <select id="bgColorPreset">
+          <option value="#1a1a2e">Navy Dark</option>
+          <option value="#000000">Black</option>
+          <option value="#ffffff">White</option>
+          <option value="#2c3e50">Dark Blue</option>
+          <option value="#27ae60">Green</option>
+          <option value="#8e44ad">Purple</option>
+          <option value="#c0392b">Red</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Background image -->
+    <div class="field-group">
+      <div class="section-label">Background Image</div>
+      <label class="upload-box" for="bgImageInput">
+        <span style="font-size:1.5rem">🖼️</span>
+        <p>Click to upload image(s)<br>(multiple files supported)</p>
+        <input type="file" id="bgImageInput" accept="image/*" multiple />
+      </label>
+      <div class="thumb-preview" id="thumbPreview"></div>
+      <div class="clear-bg" id="clearBg" style="display:none">✕ Remove Image</div>
+    </div>
+
+    <!-- Slide size -->
+    <div class="field-group">
+      <div class="section-label">Slide Size</div>
+      <select id="slideSize">
+        <option value="LAYOUT_16x9" selected>Widescreen (16:9)</option>
+        <option value="LAYOUT_4x3">Standard (4:3)</option>
+        <option value="LAYOUT_16x10">16:10</option>
+      </select>
+    </div>
+
+    <button class="btn-download" id="btnDownload">⬇ Download PPT</button>
+
+  </div>
+
+  <!-- ── Right Panel: Preview ── -->
+  <div class="panel-right">
+    <div class="preview-header">
+      <h2>Preview</h2>
+      <span class="slide-count" id="slideCount">0 slides</span>
+    </div>
+    <div class="slides-container" id="slidesContainer">
+      <div class="empty-state">Enter text to see<br>a live slide preview.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  const state = {
+    bgImages: [],        // Array of {dataUrl, file}
+    selectedBgIndex: -1, // -1 = no image, index = which image
+    bgColor: '#1a1a2e',
+    gradientColor: null, // [color1, color2] or null
+    fontColor: '#ffffff',
+    fontSize: 32,
+    fontFamily: 'Calibri',
+    textAlign: 'center',
+    slideSize: 'LAYOUT_16x9',
+    lineHeight: 1.5,
+  };
+
+  // ── Gradient presets ──
+  const gradients = [
+    ['#1a1a2e', '#e94560'],
+    ['#0f2027', '#203a43', '#2c5364'],
+    ['#16213e', '#0f3460'],
+    ['#000000', '#434343'],
+    ['#134e5e', '#71b280'],
+    ['#373b44', '#4286f4'],
+    ['#c94b4b', '#4b134f'],
+    ['#f7971e', '#ffd200'],
+    ['#56ab2f', '#a8e063'],
+    ['#654ea3', '#eaafc8'],
+    ['#2980b9', '#6dd5fa'],
+    ['#ee0979', '#ff6a00'],
+  ];
+
+  const presetsEl = document.getElementById('gradPresets');
+  gradients.forEach((g, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'grad-swatch';
+    sw.style.background = g.length === 3
+      ? `linear-gradient(135deg, ${g[0]}, ${g[1]}, ${g[2]})`
+      : `linear-gradient(135deg, ${g[0]}, ${g[1]})`;
+    sw.title = g.join(' → ');
+    sw.dataset.index = i;
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.grad-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      state.gradientColor = g;
+      state.bgColor = g[0]; // fallback for solid color
+      document.getElementById('bgColor').value = g[0];
+      renderPreview();
+    });
+    presetsEl.appendChild(sw);
+  });
+
+  // ── Element refs ──
+  const inputText   = document.getElementById('inputText');
+  const fontFamily  = document.getElementById('fontFamily');
+  const fontSize    = document.getElementById('fontSize');
+  const fontSizeVal = document.getElementById('fontSizeVal');
+  const lineHeight    = document.getElementById('lineHeight');
+  const lineHeightVal = document.getElementById('lineHeightVal');
+  const fontColor   = document.getElementById('fontColor');
+  const fontColorPreset = document.getElementById('fontColorPreset');
+  const bgColor     = document.getElementById('bgColor');
+  const bgColorPreset = document.getElementById('bgColorPreset');
+  const bgImageInput = document.getElementById('bgImageInput');
+  const thumbPreview = document.getElementById('thumbPreview');
+  const clearBg     = document.getElementById('clearBg');
+  const slideSize   = document.getElementById('slideSize');
+  const btnDownload = document.getElementById('btnDownload');
+  const slidesContainer = document.getElementById('slidesContainer');
+  const slideCount  = document.getElementById('slideCount');
+
+  // ── Parse slides from text ──
+  function parseSlides(text) {
+    return text.split(/\n\s*\n/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+  }
+
+  // ── Preview rendering ──
+  function renderPreview() {
+    const rawLines = inputText.value.split('\n');
+    const globalTitle = rawLines[0] || '';
+    const bodyText = rawLines.slice(1).join('\n');
+    const slides = parseSlides(bodyText);
+    slideCount.textContent = `${slides.length} slide${slides.length !== 1 ? 's' : ''}`;
+
+    if (slides.length === 0 && !globalTitle.trim()) {
+      slidesContainer.innerHTML = '<div class="empty-state">Enter text to see<br>a live slide preview.</div>';
+      return;
+    }
+
+    // If there's a title but no body slides yet, show at least one slide
+    const displaySlides = slides.length > 0 ? slides : [''];
+
+    slidesContainer.innerHTML = '';
+    displaySlides.forEach((slideText, idx) => {
+      const card = document.createElement('div');
+      card.className = 'slide-card';
+
+      // Background
+      const bg = document.createElement('div');
+      bg.className = 'slide-bg';
+      applyBackground(bg, idx);
+      card.appendChild(bg);
+
+      // Overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'slide-overlay';
+      overlay.style.position = 'absolute';
+      overlay.style.inset = '0';
+      overlay.style.padding = '10px 14px';
+
+      // Global title: top-right on slide 1 only
+      if (idx === 0 && globalTitle.trim()) {
+        const titleEl = document.createElement('div');
+        titleEl.style.position = 'absolute';
+        titleEl.style.top = '7px';
+        titleEl.style.right = '10px';
+        titleEl.style.fontFamily = state.fontFamily;
+        titleEl.style.color = state.fontColor;
+        titleEl.style.fontSize = Math.max(8, Math.round(state.fontSize * 0.28)) + 'px';
+        titleEl.style.fontWeight = '700';
+        titleEl.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
+        titleEl.style.maxWidth = '60%';
+        titleEl.style.textAlign = 'right';
+        titleEl.style.wordBreak = 'break-word';
+        titleEl.textContent = globalTitle;
+        overlay.appendChild(titleEl);
+      }
+
+      // Body text
+      if (slideText.trim()) {
+        const bodyEl = document.createElement('div');
+        bodyEl.style.position = 'absolute';
+        bodyEl.style.inset = '0';
+        bodyEl.style.display = 'flex';
+        bodyEl.style.alignItems = 'center';
+        bodyEl.style.justifyContent = 'center';
+        bodyEl.style.padding = '18px 14px';
+        bodyEl.style.boxSizing = 'border-box';
+
+        const inner = document.createElement('div');
+        inner.style.fontFamily = state.fontFamily;
+        inner.style.color = state.fontColor;
+        inner.style.fontSize = Math.max(9, Math.round(state.fontSize * 0.38)) + 'px';
+        inner.style.textAlign = state.textAlign;
+        inner.style.fontWeight = '500';
+        inner.style.textShadow = '0 1px 4px rgba(0,0,0,0.7)';
+        inner.style.wordBreak = 'break-word';
+        inner.style.width = '100%';
+        inner.style.whiteSpace = 'pre-wrap';
+        inner.style.lineHeight = state.lineHeight;
+        inner.textContent = slideText;
+        bodyEl.appendChild(inner);
+        overlay.appendChild(bodyEl);
+      }
+
+      card.appendChild(overlay);
+
+      const numEl = document.createElement('div');
+      numEl.className = 'slide-number';
+      numEl.textContent = idx + 1;
+      card.appendChild(numEl);
+
+      slidesContainer.appendChild(card);
+    });
+  }
+
+  function applyBackground(el, slideIdx) {
+    if (state.selectedBgIndex >= 0 && state.bgImages.length > 0) {
+      const imgIdx = state.selectedBgIndex === -2
+        ? (slideIdx % state.bgImages.length)  // rotate through all images
+        : state.selectedBgIndex;
+      el.style.background = '';
+      el.style.backgroundImage = `url(${state.bgImages[imgIdx].dataUrl})`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    } else if (state.gradientColor) {
+      const g = state.gradientColor;
+      el.style.backgroundImage = g.length === 3
+        ? `linear-gradient(135deg, ${g[0]}, ${g[1]}, ${g[2]})`
+        : `linear-gradient(135deg, ${g[0]}, ${g[1]})`;
+    } else {
+      el.style.background = state.bgColor;
+      el.style.backgroundImage = '';
+    }
+  }
+
+  // ── Event listeners ──
+  inputText.addEventListener('input', renderPreview);
+
+  fontFamily.addEventListener('change', () => { state.fontFamily = fontFamily.value; renderPreview(); });
+
+  fontSize.addEventListener('input', () => {
+    state.fontSize = parseInt(fontSize.value);
+    fontSizeVal.textContent = fontSize.value;
+    renderPreview();
+  });
+
+  lineHeight.addEventListener('input', () => {
+    state.lineHeight = parseFloat(lineHeight.value);
+    lineHeightVal.textContent = lineHeight.value;
+    renderPreview();
+  });
+
+  fontColor.addEventListener('input', () => { state.fontColor = fontColor.value; renderPreview(); });
+  fontColorPreset.addEventListener('change', () => {
+    state.fontColor = fontColorPreset.value;
+    fontColor.value = fontColorPreset.value;
+    renderPreview();
+  });
+
+  bgColor.addEventListener('input', () => {
+    state.bgColor = bgColor.value;
+    state.gradientColor = null;
+    document.querySelectorAll('.grad-swatch').forEach(s => s.classList.remove('selected'));
+    renderPreview();
+  });
+  bgColorPreset.addEventListener('change', () => {
+    state.bgColor = bgColorPreset.value;
+    state.gradientColor = null;
+    bgColor.value = bgColorPreset.value;
+    document.querySelectorAll('.grad-swatch').forEach(s => s.classList.remove('selected'));
+    renderPreview();
+  });
+
+  slideSize.addEventListener('change', () => { state.slideSize = slideSize.value; });
+
+  // Align buttons
+  document.querySelectorAll('.align-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.textAlign = btn.dataset.align;
+      renderPreview();
+    });
+  });
+  // Fix: init correctly
+  document.querySelectorAll('.align-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('[data-align="center"]').classList.add('active');
+
+  // Image upload
+  bgImageInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    let loaded = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        state.bgImages.push({ dataUrl: ev.target.result, file });
+        loaded++;
+        if (loaded === files.length) {
+          if (state.selectedBgIndex < 0) state.selectedBgIndex = 0;
+          renderThumbs();
+          renderPreview();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  clearBg.addEventListener('click', () => {
+    state.bgImages = [];
+    state.selectedBgIndex = -1;
+    thumbPreview.innerHTML = '';
+    clearBg.style.display = 'none';
+    bgImageInput.value = '';
+    renderPreview();
+  });
+
+  function renderThumbs() {
+    thumbPreview.innerHTML = '';
+    clearBg.style.display = state.bgImages.length ? 'block' : 'none';
+
+    // "Cycle all" option
+    if (state.bgImages.length > 1) {
+      const allThumb = document.createElement('div');
+      allThumb.style.cssText = 'width:60px;height:38px;border-radius:4px;background:linear-gradient(135deg,#e94560,#4286f4);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:#fff;cursor:pointer;border:2px solid transparent;flex-shrink:0';
+      allThumb.title = 'Cycle images per slide';
+      allThumb.textContent = 'Cycle';
+      allThumb.dataset.idx = '-2';
+      if (state.selectedBgIndex === -2) allThumb.style.borderColor = '#e94560';
+      allThumb.addEventListener('click', () => {
+        state.selectedBgIndex = -2;
+        renderThumbs();
+        renderPreview();
+      });
+      thumbPreview.appendChild(allThumb);
+    }
+
+    state.bgImages.forEach((img, i) => {
+      const el = document.createElement('img');
+      el.src = img.dataUrl;
+      el.title = img.file.name;
+      if (state.selectedBgIndex === i) el.classList.add('selected');
+      el.addEventListener('click', () => {
+        state.selectedBgIndex = i;
+        renderThumbs();
+        renderPreview();
+      });
+      thumbPreview.appendChild(el);
+    });
+  }
+
+  // ── Download PPT ──
+  btnDownload.addEventListener('click', async () => {
+    const rawLines = inputText.value.split('\n');
+    const globalTitle = rawLines[0] || '';
+    const bodyRaw = rawLines.slice(1).join('\n');
+    const slides = parseSlides(bodyRaw);
+
+    if (!globalTitle.trim() && slides.length === 0) {
+      alert('Please enter some text first.');
+      return;
+    }
+
+    btnDownload.textContent = '⏳ Generating...';
+    btnDownload.disabled = true;
+
+    try {
+      const pptx = new PptxGenJS();
+
+      // Slide dimensions
+      const sizeMap = {
+        LAYOUT_16x9:  { w: 13.33, h: 7.5 },
+        LAYOUT_4x3:   { w: 10,    h: 7.5 },
+        LAYOUT_16x10: { w: 12,    h: 7.5 },
+      };
+      const dim = sizeMap[state.slideSize] || sizeMap.LAYOUT_16x9;
+      pptx.defineLayout({ name: 'CUSTOM', width: dim.w, height: dim.h });
+      pptx.layout = 'CUSTOM';
+
+      const displaySlides = slides.length > 0 ? slides : [''];
+      const alignMap = { left: 'left', center: 'ctr', right: 'right' };
+
+      for (let idx = 0; idx < displaySlides.length; idx++) {
+        const slide = pptx.addSlide();
+
+        // Background
+        if (state.selectedBgIndex >= 0 && state.bgImages.length > 0) {
+          const imgIdx = state.selectedBgIndex === -2
+            ? (idx % state.bgImages.length)
+            : state.selectedBgIndex;
+          slide.background = { data: state.bgImages[imgIdx].dataUrl };
+        } else if (state.gradientColor) {
+          const hex = state.gradientColor[0].replace('#', '');
+          slide.background = { fill: hex };
+        } else {
+          const hex = state.bgColor.replace('#', '');
+          slide.background = { fill: hex };
+        }
+
+        // Global title: top-right on slide 1 only
+        if (idx === 0 && globalTitle.trim()) {
+          slide.addText(globalTitle, {
+            x: dim.w * 0.5,
+            y: 0.15,
+            w: dim.w * 0.48,
+            h: 0.6,
+            align: 'right',
+            fontFace: state.fontFamily,
+            fontSize: Math.round(state.fontSize * 0.5),
+            color: state.fontColor.replace('#', ''),
+            bold: true,
+            shadow: { type: 'outer', blur: 5, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
+          });
+        }
+
+        // Body: all lines of this slide block
+        if (displaySlides[idx].trim()) {
+          const pAlign = alignMap[state.textAlign] || 'ctr';
+          const lineArr = displaySlides[idx].split('\n');
+          const textObjs = [];
+          lineArr.forEach((line, i) => {
+            textObjs.push({
+              text: line,
+              options: {
+                align: pAlign,
+                fontFace: state.fontFamily,
+                fontSize: state.fontSize,
+                color: state.fontColor.replace('#', ''),
+                lineSpacingMultiple: state.lineHeight,
+                shadow: { type: 'outer', blur: 6, offset: 2, angle: 45, color: '000000', opacity: 0.5 },
+                breakLine: i < lineArr.length - 1,
+              },
+            });
+          });
+          slide.addText(textObjs, {
+            x: 0.3,
+            y: 0,
+            w: dim.w - 0.6,
+            h: dim.h,
+            valign: 'middle',
+          });
+        }
+      }
+
+      await pptx.writeFile({ fileName: 'slides.pptx' });
+    } catch (err) {
+      console.error(err);
+      alert('Error generating PPT: ' + err.message);
+    } finally {
+      btnDownload.textContent = '⬇ Download PPT';
+      btnDownload.disabled = false;
+    }
+  });
+
+  // ── Init ──
+  renderPreview();
+</script>
+</body>
+</html>

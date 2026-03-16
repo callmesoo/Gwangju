@@ -376,6 +376,11 @@
         </select>
       </div>
 
+      <div class="field">
+        <label>Number of Rounds <span id="rounds-hint" style="font-weight:400;text-transform:none;letter-spacing:0"></span></label>
+        <input type="number" id="num-rounds" min="1" placeholder="e.g. 5" style="border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-size:1rem;background:#fff;color:var(--text);transition:border-color .2s" />
+      </div>
+
       <button class="btn btn-primary" onclick="buildNameFields()">Set Players &amp; Courts</button>
     </div>
   </div>
@@ -470,6 +475,14 @@ function buildNameFields() {
   numPlayers = np;
   numCourts  = nc;
 
+  // Compute max rounds (full round-robin) and pre-fill the input
+  const padded   = np % 2 === 0 ? np : np + 1;
+  const maxRounds = padded - 1;
+  const roundsInput = document.getElementById('num-rounds');
+  if (!roundsInput.value) roundsInput.value = maxRounds;
+  roundsInput.max = maxRounds;
+  document.getElementById('rounds-hint').textContent = `(max ${maxRounds} for full round-robin)`;
+
   const grid = document.getElementById('player-names-grid');
   grid.innerHTML = '';
   for (let i = 1; i <= np; i++) {
@@ -519,7 +532,10 @@ function shufflePlayers() {
 }
 
 function buildAndRender() {
-  rounds = buildDoublesSchedule(players.length, numCourts);
+  const padded    = players.length % 2 === 0 ? players.length : players.length + 1;
+  const maxRounds = padded - 1;
+  const nr = Math.min(Math.max(parseInt(document.getElementById('num-rounds').value) || maxRounds, 1), maxRounds);
+  rounds = buildDoublesSchedule(players.length, numCourts, nr);
   renderSchedule();
   renderScoreTable();
   document.getElementById('schedule-container').style.display = 'block';
@@ -537,13 +553,13 @@ function buildAndRender() {
    Courts limit how many matches play simultaneously;
    remaining players sit out.
 ───────────────────────────────────────────────────────────── */
-function buildDoublesSchedule(n, courts) {
+function buildDoublesSchedule(n, courts, totalRounds) {
   // Build index list; pad to even length with a bye slot (-1) if needed
   let list = Array.from({ length: n }, (_, i) => i);
   if (list.length % 2 !== 0) list.push(-1);
 
   const N = list.length;           // always even
-  const totalRounds = N - 1;       // standard circle round count
+  // totalRounds is passed in (user-chosen, capped to N-1 by caller)
   const result = [];
 
   for (let r = 0; r < totalRounds; r++) {

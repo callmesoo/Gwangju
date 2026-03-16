@@ -343,7 +343,7 @@
 
       <div class="field">
         <label>Number of Players</label>
-        <select id="num-players">
+        <select id="num-players" onchange="updateCourtsOptions()">
           <option value="">— select —</option>
           <option value="4">4</option>
           <option value="5">5</option>
@@ -467,10 +467,36 @@ let rounds = [];
 /* ─────────────────────────────────────────────────────────────
    Step 1 → build name fields
 ───────────────────────────────────────────────────────────── */
+function updateCourtsOptions() {
+  const np = parseInt(document.getElementById('num-players').value);
+  if (!np) return;
+  const maxCourts = Math.floor(np / 4);
+  const courtsEl  = document.getElementById('num-courts');
+  const current   = parseInt(courtsEl.value) || 0;
+  courtsEl.innerHTML = '<option value="">— select —</option>';
+  for (let c = 1; c <= 8; c++) {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    if (c > maxCourts) {
+      opt.disabled = true;
+      opt.textContent = `${c}  (need ${c * 4} players)`;
+    }
+    courtsEl.appendChild(opt);
+  }
+  if (current && current <= maxCourts) courtsEl.value = current;
+}
+
 function buildNameFields() {
   const np = parseInt(document.getElementById('num-players').value);
   const nc = parseInt(document.getElementById('num-courts').value);
   if (!np || !nc) { alert('Please select both number of players and courts.'); return; }
+
+  const maxCourts = Math.floor(np / 4);
+  if (nc > maxCourts) {
+    alert(`With ${np} players, doubles can only fill ${maxCourts} court(s) at a time (need ${nc * 4} players for ${nc} courts). Please select ${maxCourts} or fewer courts.`);
+    return;
+  }
 
   numPlayers = np;
   numCourts  = nc;

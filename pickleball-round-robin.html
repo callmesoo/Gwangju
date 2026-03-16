@@ -476,12 +476,13 @@ function buildNameFields() {
   numCourts  = nc;
 
   // Compute max rounds (full round-robin) and pre-fill the input
-  const padded   = np % 2 === 0 ? np : np + 1;
-  const maxRounds = padded - 1;
-  const roundsInput = document.getElementById('num-rounds');
-  if (!roundsInput.value) roundsInput.value = maxRounds;
+  const padded       = np % 2 === 0 ? np : np + 1;
+  const fullRRRounds = padded - 1;
+  const maxRounds    = 10;
+  const roundsInput  = document.getElementById('num-rounds');
+  if (!roundsInput.value) roundsInput.value = Math.min(fullRRRounds, maxRounds);
   roundsInput.max = maxRounds;
-  document.getElementById('rounds-hint').textContent = `(max ${maxRounds} for full round-robin)`;
+  document.getElementById('rounds-hint').textContent = `(full round-robin = ${fullRRRounds}, max ${maxRounds})`;
 
   const grid = document.getElementById('player-names-grid');
   grid.innerHTML = '';
@@ -532,9 +533,7 @@ function shufflePlayers() {
 }
 
 function buildAndRender() {
-  const padded    = players.length % 2 === 0 ? players.length : players.length + 1;
-  const maxRounds = padded - 1;
-  const nr = Math.min(Math.max(parseInt(document.getElementById('num-rounds').value) || maxRounds, 1), maxRounds);
+  const nr = Math.min(Math.max(parseInt(document.getElementById('num-rounds').value) || 1, 1), 10);
   rounds = buildDoublesSchedule(players.length, numCourts, nr);
   renderSchedule();
   renderScoreTable();

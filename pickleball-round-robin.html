@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pickleball Round Robin</title>
+  <title>Pickleball Round Robin – Doubles</title>
   <style>
     :root {
       --green:  #4caf50;
@@ -66,7 +66,13 @@
       align-items: center;
       gap: 8px;
     }
-    .card h2::before { content: ''; display: inline-block; width: 4px; height: 18px; background: var(--green); border-radius: 2px; }
+    .card h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px; height: 18px;
+      background: var(--green);
+      border-radius: 2px;
+    }
 
     /* ── Setup row ──────────────────────────────────────────── */
     .setup-row {
@@ -89,7 +95,7 @@
       text-transform: uppercase;
       letter-spacing: .6px;
     }
-    .field select, .field input[type="number"] {
+    .field select {
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 14px;
@@ -99,10 +105,7 @@
       transition: border-color .2s;
       appearance: none;
     }
-    .field select:focus, .field input[type="number"]:focus {
-      outline: none;
-      border-color: var(--green);
-    }
+    .field select:focus { outline: none; border-color: var(--green); }
 
     /* ── Button ─────────────────────────────────────────────── */
     .btn {
@@ -113,31 +116,20 @@
       font-weight: 600;
       cursor: pointer;
       transition: transform .12s, box-shadow .12s;
+      white-space: nowrap;
     }
     .btn:active { transform: scale(.97); }
-    .btn-primary {
-      background: var(--green);
-      color: #fff;
-      box-shadow: 0 2px 6px rgba(76,175,80,.4);
-    }
-    .btn-primary:hover { background: var(--green-d); }
-    .btn-accent {
-      background: var(--yellow);
-      color: #212121;
-      box-shadow: 0 2px 6px rgba(253,216,53,.45);
-    }
-    .btn-accent:hover { background: #f9ca00; }
-    .btn-outline {
-      background: transparent;
-      color: var(--green-d);
-      border: 1.5px solid var(--green);
-    }
-    .btn-outline:hover { background: #e8f5e9; }
+    .btn-primary  { background: var(--green);  color: #fff; box-shadow: 0 2px 6px rgba(76,175,80,.4); }
+    .btn-primary:hover  { background: var(--green-d); }
+    .btn-accent   { background: var(--yellow); color: #212121; box-shadow: 0 2px 6px rgba(253,216,53,.45); }
+    .btn-accent:hover   { background: #f9ca00; }
+    .btn-outline  { background: transparent; color: var(--green-d); border: 1.5px solid var(--green); }
+    .btn-outline:hover  { background: #e8f5e9; }
 
     /* ── Player name grid ───────────────────────────────────── */
     #player-names-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       gap: 12px;
     }
     .player-field {
@@ -146,8 +138,7 @@
       gap: 8px;
     }
     .player-field .num {
-      min-width: 26px;
-      height: 26px;
+      min-width: 26px; height: 26px;
       background: var(--green);
       color: #fff;
       border-radius: 50%;
@@ -173,7 +164,7 @@
     /* ── Schedule ───────────────────────────────────────────── */
     #schedule-container { display: none; }
 
-    .round-block { margin-bottom: 24px; }
+    .round-block { margin-bottom: 28px; }
     .round-block h3 {
       font-size: 1rem;
       font-weight: 700;
@@ -182,20 +173,20 @@
       padding-bottom: 8px;
       border-bottom: 2px solid #e8f5e9;
     }
-
     .courts-row {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
     }
 
+    /* ── Court card (doubles layout) ────────────────────────── */
     .court-card {
       flex: 1;
-      min-width: 220px;
+      min-width: 240px;
       background: #f9fbe7;
       border: 1.5px solid #c5e1a5;
       border-radius: 10px;
-      padding: 14px 18px;
+      padding: 16px 20px;
     }
     .court-card .court-label {
       font-size: .75rem;
@@ -203,29 +194,64 @@
       text-transform: uppercase;
       letter-spacing: .7px;
       color: var(--green-d);
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
     .court-card .match {
-      font-size: .95rem;
-      color: var(--text);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
-    .court-card .vs {
-      font-size: .75rem;
+    .court-card .team {
+      font-size: .97rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .court-card .team span {
+      display: inline-block;
+    }
+    .court-card .ampersand {
+      color: var(--green-d);
+      font-weight: 700;
+      margin: 0 4px;
+    }
+    .court-card .vs-badge {
+      font-size: .72rem;
       font-weight: 700;
       color: var(--sub);
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 1px 6px;
+      padding: 2px 10px;
+      letter-spacing: .5px;
     }
-    .court-card.bye-card {
+
+    /* ── Idle / sitting-out cards ───────────────────────────── */
+    .court-card.idle-card {
       background: #fafafa;
       border-color: #e0e0e0;
     }
-    .court-card.bye-card .match { color: var(--sub); font-style: italic; }
+    .court-card.idle-card .court-label { color: var(--sub); }
+    .court-card.idle-card .idle-text {
+      color: var(--sub);
+      font-style: italic;
+      font-size: .9rem;
+    }
+    .court-card.sit-card {
+      background: #fff8e1;
+      border: 1.5px dashed #ffe082;
+    }
+    .court-card.sit-card .court-label { color: #f57f17; }
+    .sit-names {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .sit-names span {
+      font-size: .9rem;
+      color: var(--text);
+    }
 
     /* ── Score table ─────────────────────────────────────────── */
     .score-wrap { overflow-x: auto; }
@@ -233,26 +259,26 @@
       width: 100%;
       border-collapse: collapse;
       font-size: .88rem;
+      min-width: 520px;
     }
     #score-table th, #score-table td {
       border: 1px solid var(--border);
       padding: 9px 14px;
       text-align: center;
+      vertical-align: middle;
     }
-    #score-table th {
-      background: var(--green);
-      color: #fff;
-      font-weight: 600;
-    }
+    #score-table th { background: var(--green); color: #fff; font-weight: 600; }
     #score-table tbody tr:nth-child(even) { background: #f9fbe7; }
-    #score-table td:first-child { text-align: left; font-weight: 600; }
+    #score-table td:first-child { text-align: left; font-weight: 600; white-space: nowrap; }
+    #score-table .team-cell { text-align: left; font-weight: 600; line-height: 1.4; }
+    #score-table .amp { color: var(--green-d); font-weight: 700; }
     #score-table input[type="number"] {
-      width: 52px;
-      padding: 4px 6px;
+      width: 60px;
+      padding: 5px 6px;
       border: 1px solid var(--border);
       border-radius: 5px;
       text-align: center;
-      font-size: .88rem;
+      font-size: .9rem;
     }
     #score-table input[type="number"]:focus { outline: none; border-color: var(--green); }
 
@@ -267,16 +293,22 @@
       padding: 9px 16px;
       text-align: center;
     }
-    #standings-table th {
-      background: var(--green-d);
-      color: #fff;
-      font-weight: 600;
-    }
+    #standings-table th { background: var(--green-d); color: #fff; font-weight: 600; }
     #standings-table tbody tr:nth-child(1) { background: #fff9c4; font-weight: 700; }
     #standings-table tbody tr:nth-child(2) { background: #f1f8e9; }
     #standings-table tbody tr:nth-child(3) { background: #fbe9e7; }
-    #standings-table td:nth-child(1) { text-align: center; font-weight: 700; color: var(--green-d); }
     #standings-table td:nth-child(2) { text-align: left; font-weight: 600; }
+
+    /* ── Info note ──────────────────────────────────────────── */
+    .info-note {
+      font-size: .82rem;
+      color: var(--sub);
+      margin-top: 10px;
+      padding: 8px 14px;
+      background: #f1f8e9;
+      border-left: 3px solid var(--green);
+      border-radius: 4px;
+    }
 
     /* ── Print ──────────────────────────────────────────────── */
     @media print {
@@ -298,7 +330,7 @@
   <span class="ball">🏓</span>
   <div>
     <h1>Pickleball Round Robin</h1>
-    <p>Generate schedules &amp; track scores</p>
+    <p>Doubles format · Rotating partners every round</p>
   </div>
 </header>
 
@@ -375,7 +407,15 @@
     <h2>Score Entry</h2>
     <div class="score-wrap">
       <table id="score-table">
-        <thead id="score-thead"></thead>
+        <thead>
+          <tr>
+            <th>Match</th>
+            <th>Team 1</th>
+            <th>Score 1</th>
+            <th>Score 2</th>
+            <th>Team 2</th>
+          </tr>
+        </thead>
         <tbody id="score-tbody"></tbody>
       </table>
     </div>
@@ -396,13 +436,14 @@
             <th>W</th>
             <th>L</th>
             <th>+Pts</th>
-            <th>-Pts</th>
+            <th>−Pts</th>
             <th>Diff</th>
           </tr>
         </thead>
         <tbody id="standings-tbody"></tbody>
       </table>
     </div>
+    <p class="info-note">Standings are individual. W/L = matches won/lost as a team. Points = team totals shared between partners.</p>
   </div>
 
 </main>
@@ -414,7 +455,9 @@
 let numPlayers = 0;
 let numCourts  = 0;
 let players    = [];
-let rounds     = []; // rounds[r] = array of matches {p1, p2}  (-1 = bye)
+
+// rounds[r] = { matches: [{t1:[i,j], t2:[k,l]}, ...], sittingOut: [m, n, ...] }
+let rounds = [];
 
 /* ─────────────────────────────────────────────────────────────
    Step 1 → build name fields
@@ -439,10 +482,11 @@ function buildNameFields() {
     grid.appendChild(div);
   }
 
-  document.getElementById('names-card').style.display = 'block';
+  document.getElementById('names-card').style.display       = 'block';
   document.getElementById('schedule-container').style.display = 'none';
-  document.getElementById('scores-card').style.display = 'none';
-  document.getElementById('standings-card').style.display = 'none';
+  document.getElementById('scores-card').style.display      = 'none';
+  document.getElementById('standings-card').style.display   = 'none';
+  document.getElementById('names-card').scrollIntoView({ behavior: 'smooth' });
 }
 
 function fillDemoNames() {
@@ -455,7 +499,7 @@ function fillDemoNames() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Step 2 → generate round-robin
+   Step 2 → generate schedule
 ───────────────────────────────────────────────────────────── */
 function generateSchedule() {
   players = [];
@@ -475,94 +519,112 @@ function shufflePlayers() {
 }
 
 function buildAndRender() {
-  rounds = buildRoundRobin(players);
+  rounds = buildDoublesSchedule(players.length, numCourts);
   renderSchedule();
   renderScoreTable();
   document.getElementById('schedule-container').style.display = 'block';
-  document.getElementById('scores-card').style.display = 'block';
-  document.getElementById('standings-card').style.display = 'none';
+  document.getElementById('scores-card').style.display        = 'block';
+  document.getElementById('standings-card').style.display     = 'none';
   document.getElementById('schedule-container').scrollIntoView({ behavior: 'smooth' });
 }
 
-/* Standard circle / round-robin algorithm.
-   If odd number of players, add a virtual "BYE". */
-function buildRoundRobin(ps) {
-  let list = [...ps.keys()]; // indices
-  const hasBye = list.length % 2 !== 0;
-  if (hasBye) list.push(-1); // -1 = bye
+/* ─────────────────────────────────────────────────────────────
+   Doubles round-robin algorithm (circle / rotation method)
 
-  const n = list.length;
-  const totalRounds = n - 1;
-  const matchesPerRound = n / 2;
-  const roundsArr = [];
+   Each round the player list rotates (index 0 fixed).
+   Real players are taken in order and grouped into fours:
+     [i, i+1] vs [i+2, i+3]  → one doubles match
+   Courts limit how many matches play simultaneously;
+   remaining players sit out.
+───────────────────────────────────────────────────────────── */
+function buildDoublesSchedule(n, courts) {
+  // Build index list; pad to even length with a bye slot (-1) if needed
+  let list = Array.from({ length: n }, (_, i) => i);
+  if (list.length % 2 !== 0) list.push(-1);
+
+  const N = list.length;           // always even
+  const totalRounds = N - 1;       // standard circle round count
+  const result = [];
 
   for (let r = 0; r < totalRounds; r++) {
-    const matches = [];
-    for (let m = 0; m < matchesPerRound; m++) {
-      const p1 = list[m];
-      const p2 = list[n - 1 - m];
-      if (p1 !== -1 && p2 !== -1) matches.push({ p1, p2 });
-      // skip bye matches entirely (or mark them)
-      else matches.push({ p1: p1 === -1 ? p2 : p1, p2: -1 }); // bye
-    }
-    roundsArr.push(matches);
+    // Extract real players in current rotation order
+    const ordered = list.filter(p => p !== -1);
 
-    // rotate: keep list[0] fixed, rotate rest
+    const matches    = [];
+    const sittingOut = [];
+
+    let idx = 0;
+    // Fill courts with groups of 4
+    while (idx + 3 < ordered.length && matches.length < courts) {
+      matches.push({
+        t1: [ordered[idx],     ordered[idx + 1]],
+        t2: [ordered[idx + 2], ordered[idx + 3]]
+      });
+      idx += 4;
+    }
+
+    // Everyone left sits out this round
+    while (idx < ordered.length) {
+      sittingOut.push(ordered[idx]);
+      idx++;
+    }
+
+    result.push({ matches, sittingOut });
+
+    // Rotate: keep list[0] fixed, rotate the rest right
     const last = list.pop();
     list.splice(1, 0, last);
   }
 
-  return roundsArr;
+  return result;
 }
 
 /* ─────────────────────────────────────────────────────────────
    Render schedule
 ───────────────────────────────────────────────────────────── */
+function teamLabel(t1, t2) {
+  // e.g. "Alice & Bob"
+  return `<span>${players[t1]}</span><span class="ampersand">&amp;</span><span>${players[t2]}</span>`;
+}
+
 function renderSchedule() {
   const container = document.getElementById('rounds-container');
   container.innerHTML = '';
 
-  rounds.forEach((matches, ri) => {
-    // Spread matches across courts; some courts may be idle this round
+  rounds.forEach(({ matches, sittingOut }, ri) => {
     const block = document.createElement('div');
     block.className = 'round-block';
 
-    const activeMatches = matches.filter(m => m.p2 !== -1);
-    const byeMatches    = matches.filter(m => m.p2 === -1);
-
     let html = `<h3>Round ${ri + 1}</h3><div class="courts-row">`;
 
+    // Active courts
     for (let c = 0; c < numCourts; c++) {
-      const m = activeMatches[c];
+      const m = matches[c];
       if (m) {
         html += `
           <div class="court-card">
             <div class="court-label">Court ${c + 1}</div>
             <div class="match">
-              <span>${players[m.p1]}</span>
-              <span class="vs">VS</span>
-              <span>${players[m.p2]}</span>
+              <div class="team">${teamLabel(m.t1[0], m.t1[1])}</div>
+              <div class="vs-badge">VS</div>
+              <div class="team">${teamLabel(m.t2[0], m.t2[1])}</div>
             </div>
           </div>`;
       } else {
         html += `
-          <div class="court-card bye-card">
+          <div class="court-card idle-card">
             <div class="court-label">Court ${c + 1}</div>
-            <div class="match">— idle —</div>
+            <div class="idle-text">— idle —</div>
           </div>`;
       }
     }
 
-    // Waiting / bye players
-    const waitingIdx = activeMatches.slice(numCourts).flatMap(m => [m.p1, m.p2]);
-    const byeIdx     = byeMatches.map(m => m.p1);
-    const sittingOut = [...new Set([...waitingIdx, ...byeIdx])];
-
+    // Sitting-out players
     if (sittingOut.length) {
       html += `
-        <div class="court-card bye-card" style="border-style:dashed">
+        <div class="court-card sit-card">
           <div class="court-label">Sitting Out</div>
-          <div class="match" style="flex-direction:column; align-items:flex-start; gap:4px">
+          <div class="sit-names">
             ${sittingOut.map(i => `<span>${players[i]}</span>`).join('')}
           </div>
         </div>`;
@@ -575,59 +637,66 @@ function renderSchedule() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Score table
-   Rows = rounds × courts (only real matches)
+   Score table  (one row per doubles match)
 ───────────────────────────────────────────────────────────── */
 function renderScoreTable() {
-  const thead = document.getElementById('score-thead');
   const tbody = document.getElementById('score-tbody');
-  thead.innerHTML = `<tr><th>Match</th><th>Player A</th><th>Score A</th><th>Score B</th><th>Player B</th></tr>`;
   tbody.innerHTML = '';
 
-  rounds.forEach((matches, ri) => {
-    const active = matches.filter(m => m.p2 !== -1);
-    active.slice(0, numCourts).forEach((m, ci) => {
+  let mi = 0; // global match index for input IDs
+  rounds.forEach(({ matches }, ri) => {
+    matches.forEach((m, ci) => {
       const row = document.createElement('tr');
+      row.dataset.t1 = JSON.stringify(m.t1);
+      row.dataset.t2 = JSON.stringify(m.t2);
+      row.dataset.mi = mi;
+
       row.innerHTML = `
         <td>R${ri + 1} · C${ci + 1}</td>
-        <td>${players[m.p1]}</td>
-        <td><input type="number" min="0" id="s_${ri}_${ci}_a" placeholder="0" /></td>
-        <td><input type="number" min="0" id="s_${ri}_${ci}_b" placeholder="0" /></td>
-        <td>${players[m.p2]}</td>
+        <td class="team-cell">
+          ${players[m.t1[0]]}<br>
+          <span class="amp">&amp;</span> ${players[m.t1[1]]}
+        </td>
+        <td><input type="number" min="0" id="s_${mi}_a" placeholder="0" /></td>
+        <td><input type="number" min="0" id="s_${mi}_b" placeholder="0" /></td>
+        <td class="team-cell">
+          ${players[m.t2[0]]}<br>
+          <span class="amp">&amp;</span> ${players[m.t2[1]]}
+        </td>
       `;
-      row.dataset.p1 = m.p1;
-      row.dataset.p2 = m.p2;
       tbody.appendChild(row);
+      mi++;
     });
   });
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Standings
+   Standings  (individual records from team results)
 ───────────────────────────────────────────────────────────── */
 function calcStandings() {
-  const stats = players.map((name, i) => ({ name, w: 0, l: 0, pf: 0, pa: 0 }));
+  const stats = players.map(name => ({ name, w: 0, l: 0, pf: 0, pa: 0 }));
 
-  const tbody = document.getElementById('score-tbody');
-  [...tbody.rows].forEach(row => {
-    const p1 = parseInt(row.dataset.p1);
-    const p2 = parseInt(row.dataset.p2);
-    const [ri, ci] = (() => {
-      const [cell] = row.cells;
-      const m = cell.textContent.match(/R(\d+) · C(\d+)/);
-      return m ? [parseInt(m[1]) - 1, parseInt(m[2]) - 1] : [null, null];
-    })();
-    if (ri === null) return;
+  document.querySelectorAll('#score-tbody tr').forEach(row => {
+    const t1 = JSON.parse(row.dataset.t1);
+    const t2 = JSON.parse(row.dataset.t2);
+    const mi = row.dataset.mi;
 
-    const sa = parseInt(document.getElementById(`s_${ri}_${ci}_a`)?.value) || 0;
-    const sb = parseInt(document.getElementById(`s_${ri}_${ci}_b`)?.value) || 0;
+    const sa = parseInt(document.getElementById(`s_${mi}_a`)?.value) || 0;
+    const sb = parseInt(document.getElementById(`s_${mi}_b`)?.value) || 0;
 
-    stats[p1].pf += sa; stats[p1].pa += sb;
-    stats[p2].pf += sb; stats[p2].pa += sa;
+    // Points
+    t1.forEach(p => { stats[p].pf += sa; stats[p].pa += sb; });
+    t2.forEach(p => { stats[p].pf += sb; stats[p].pa += sa; });
 
-    if (sa > sb) { stats[p1].w++; stats[p2].l++; }
-    else if (sb > sa) { stats[p2].w++; stats[p1].l++; }
-    // tie: no change
+    // Win / Loss
+    if (sa > sb) {
+      t1.forEach(p => stats[p].w++);
+      t2.forEach(p => stats[p].l++);
+    } else if (sb > sa) {
+      t2.forEach(p => stats[p].w++);
+      t1.forEach(p => stats[p].l++);
+    }
+    // tie: no W or L
   });
 
   stats.sort((a, b) => {
@@ -638,8 +707,9 @@ function calcStandings() {
   const stbody = document.getElementById('standings-tbody');
   stbody.innerHTML = '';
   stats.forEach((s, i) => {
-    const tr = document.createElement('tr');
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+    const diff  = s.pf - s.pa;
+    const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${medal}</td>
       <td>${s.name}</td>
@@ -647,7 +717,7 @@ function calcStandings() {
       <td>${s.l}</td>
       <td>${s.pf}</td>
       <td>${s.pa}</td>
-      <td>${s.pf - s.pa >= 0 ? '+' : ''}${s.pf - s.pa}</td>
+      <td>${diff >= 0 ? '+' : ''}${diff}</td>
     `;
     stbody.appendChild(tr);
   });

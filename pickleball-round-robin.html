@@ -572,24 +572,35 @@ function buildAndRender() {
 /* ─────────────────────────────────────────────────────────────
    Doubles round-robin algorithm (circle / rotation method)
 
-   Each round the player list rotates (index 0 fixed).
-   Real players are taken in order and grouped into fours:
-     [i, i+1] vs [i+2, i+3]  → one doubles match
-   Courts limit how many matches play simultaneously;
-   remaining players sit out.
+   Two rotation strategies are used depending on whether anyone
+   sits out:
+
+   • No sit-outs (n == courts × 4):
+     Traditional circle rotation — position 0 is fixed and the
+     rest rotate. This maximises unique partner/opponent pairs
+     across rounds.
+
+   • Sit-outs exist (n > courts × 4):
+     The entire list rotates one step each round (no fixed
+     position). The sit-out slot therefore advances through
+     every player at the same rate, guaranteeing that each
+     player sits out the same number of rounds (or differs by
+     at most 1 when the total can't divide evenly).
 ───────────────────────────────────────────────────────────── */
 function buildDoublesSchedule(n, courts, totalRounds) {
-  // Build index list; pad to even length with a bye slot (-1) if needed
-  let list = Array.from({ length: n }, (_, i) => i);
-  if (list.length % 2 !== 0) list.push(-1);
+  const playersPerRound = courts * 4;
+  const hasSitOuts = n > playersPerRound;
 
-  const N = list.length;           // always even
-  // totalRounds is passed in (user-chosen, capped to N-1 by caller)
+  // For the no-sit-out path n is always even (courts = floor(n/4)
+  // implies courts*4 == n only when n%4 == 0). Add a safety pad
+  // just in case, but it should never be needed.
+  let list = Array.from({ length: n }, (_, i) => i);
+  if (!hasSitOuts && n % 2 !== 0) list.push(-1);
+
   const result = [];
 
   for (let r = 0; r < totalRounds; r++) {
-    // Extract real players in current rotation order
-    const ordered = list.filter(p => p !== -1);
+    const ordered = hasSitOuts ? list : list.filter(p => p !== -1);
 
     const matches    = [];
     const sittingOut = [];
@@ -612,9 +623,16 @@ function buildDoublesSchedule(n, courts, totalRounds) {
 
     result.push({ matches, sittingOut });
 
-    // Rotate: keep list[0] fixed, rotate the rest right
-    const last = list.pop();
-    list.splice(1, 0, last);
+    if (hasSitOuts) {
+      // Full rotation — shift first element to end so the sit-out
+      // slot visits every player at the same rate.
+      list.push(list.shift());
+    } else {
+      // Traditional circle rotation — keep index 0 fixed for
+      // maximum unique-pair coverage.
+      const last = list.pop();
+      list.splice(1, 0, last);
+    }
   }
 
   return result;

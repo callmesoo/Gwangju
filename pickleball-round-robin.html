@@ -358,6 +358,22 @@
           <option value="14">14</option>
           <option value="15">15</option>
           <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+          <option value="21">21</option>
+          <option value="22">22</option>
+          <option value="23">23</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+          <option value="26">26</option>
+          <option value="27">27</option>
+          <option value="28">28</option>
+          <option value="29">29</option>
+          <option value="30">30</option>
+          <option value="31">31</option>
+          <option value="32">32</option>
         </select>
       </div>
 
@@ -504,7 +520,7 @@ function buildNameFields() {
   // Compute max rounds (full round-robin) and pre-fill the input
   const padded       = np % 2 === 0 ? np : np + 1;
   const fullRRRounds = padded - 1;
-  const maxRounds    = 10;
+  const maxRounds    = 31;
   const roundsInput  = document.getElementById('num-rounds');
   if (!roundsInput.value) roundsInput.value = Math.min(fullRRRounds, maxRounds);
   roundsInput.max = maxRounds;
@@ -531,7 +547,9 @@ function buildNameFields() {
 
 function fillDemoNames() {
   const demos = ['Alice','Bob','Carol','Dave','Eve','Frank','Grace','Hank',
-                 'Iris','Jack','Karen','Leo','Maya','Nick','Olivia','Pete'];
+                 'Iris','Jack','Karen','Leo','Maya','Nick','Olivia','Pete',
+                 'Quinn','Ray','Sara','Tom','Uma','Vic','Wendy','Xander',
+                 'Yara','Zoe','Aaron','Beth','Chris','Dana','Eli','Faye'];
   for (let i = 1; i <= numPlayers; i++) {
     const el = document.getElementById(`p${i}`);
     if (el && !el.value) el.value = demos[i - 1] || `Player ${i}`;

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>텍스트 → PPT 변환기</title>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin-bottom: 24px;
+      color: #a8d8ea;
+      letter-spacing: 1px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .panel {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #0f3460;
+    }
+    .panel h2 {
+      font-size: 1rem;
+      margin-bottom: 14px;
+      color: #a8d8ea;
+      border-bottom: 1px solid #0f3460;
+      padding-bottom: 8px;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      color: #9ab;
+    }
+    textarea {
+      width: 100%;
+      height: 260px;
+      background: #0f3460;
+      color: #e0e0e0;
+      border: 1px solid #1a4a80;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.9rem;
+      resize: vertical;
+      font-family: inherit;
+      line-height: 1.6;
+    }
+    textarea:focus { outline: none; border-color: #a8d8ea; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .control-group { display: flex; flex-direction: column; }
+    select, input[type="number"], input[type="color"] {
+      background: #0f3460;
+      color: #e0e0e0;
+      border: 1px solid #1a4a80;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 0.85rem;
+    }
+    select:focus, input:focus { outline: none; border-color: #a8d8ea; }
+
+    .color-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    input[type="color"] {
+      width: 40px;
+      height: 34px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .bg-upload {
+      margin-top: 12px;
+    }
+    .upload-btn {
+      display: inline-block;
+      background: #0f3460;
+      border: 1px dashed #a8d8ea;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #a8d8ea;
+      transition: background 0.2s;
+      width: 100%;
+      text-align: center;
+    }
+    .upload-btn:hover { background: #1a4a80; }
+    #bgFileInput { display: none; }
+    #bgFileName {
+      font-size: 0.78rem;
+      color: #789;
+      margin-top: 4px;
+    }
+
+    .btn-download {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: linear-gradient(135deg, #0f3460, #533483);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .btn-download:hover { opacity: 0.85; }
+
+    /* Preview */
+    .preview-area h2 { margin-bottom: 14px; }
+    .slides-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 680px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .slide-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #0f3460;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0;
+    }
+    .slide-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+    .slide-bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+    }
+    .slide-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 6% 8%;
+    }
+    .slide-verse {
+      text-align: right;
+      font-weight: 700;
+      word-break: break-word;
+    }
+    .slide-body {
+      text-align: right;
+      word-break: break-word;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .slide-body p { margin: 0; }
+    .slide-number {
+      position: absolute;
+      bottom: 6px;
+      left: 10px;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.4);
+      z-index: 3;
+    }
+    .no-slides {
+      color: #567;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    @media (max-width: 800px) {
+      .container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<h1>텍스트 → PPT 변환기</h1>
+<div class="container">
+  <!-- 왼쪽: 입력 + 설정 -->
+  <div class="panel">
+    <h2>텍스트 입력</h2>
+    <label>빈 줄로 슬라이드를 구분합니다. 각 슬라이드의 첫 번째 줄은 성경 구절 표시로 사용됩니다.</label>
+    <textarea id="inputText" placeholder="예시:
+요한복음 3:16
+하나님이 세상을 이처럼 사랑하사
+독생자를 주셨으니
+
+시편 23:1
+여호와는 나의 목자시니
+내게 부족함이 없으리로다"></textarea>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>폰트</label>
+        <select id="fontSelect">
+          <option value="Malgun Gothic">맑은 고딕</option>
+          <option value="Gulim">굴림</option>
+          <option value="Dotum">돋움</option>
+          <option value="Batang">바탕</option>
+          <option value="Gungsuh">궁서</option>
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Calibri">Calibri</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>줄 간격</label>
+        <select id="lineSpacing">
+          <option value="1.0">1.0 (좁게)</option>
+          <option value="1.2">1.2</option>
+          <option value="1.5" selected>1.5 (보통)</option>
+          <option value="1.8">1.8</option>
+          <option value="2.0">2.0 (넓게)</option>
+          <option value="2.5">2.5</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>구절 글자 크기 (pt)</label>
+        <input type="number" id="verseFontSize" value="24" min="8" max="80">
+      </div>
+      <div class="control-group">
+        <label>본문 글자 크기 (pt)</label>
+        <input type="number" id="bodyFontSize" value="32" min="8" max="80">
+      </div>
+      <div class="control-group">
+        <label>구절 글자 색상</label>
+        <div class="color-row">
+          <input type="color" id="verseColor" value="#ffdd88">
+          <span id="verseColorHex" style="font-size:0.8rem;color:#9ab;">#ffdd88</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>본문 글자 색상</label>
+        <div class="color-row">
+          <input type="color" id="bodyColor" value="#ffffff">
+          <span id="bodyColorHex" style="font-size:0.8rem;color:#9ab;">#ffffff</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-upload">
+      <label>배경 이미지</label>
+      <label class="upload-btn" for="bgFileInput">📁 배경 이미지 선택 (JPG / PNG)</label>
+      <input type="file" id="bgFileInput" accept="image/*">
+      <div id="bgFileName">선택된 파일 없음 (기본 검정 배경)</div>
+    </div>
+
+    <button class="btn-download" onclick="downloadPPT()">⬇ PPT 다운로드</button>
+  </div>
+
+  <!-- 오른쪽: 미리보기 -->
+  <div class="panel preview-area">
+    <h2>미리보기</h2>
+    <div class="slides-wrapper" id="previewArea">
+      <div class="no-slides">텍스트를 입력하면 미리보기가 표시됩니다.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let bgDataUrl = null;
+
+  // 배경 이미지 로드
+  document.getElementById('bgFileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('bgFileName').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      bgDataUrl = ev.target.result;
+      updatePreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // 색상 hex 표시 업데이트
+  document.getElementById('verseColor').addEventListener('input', function() {
+    document.getElementById('verseColorHex').textContent = this.value;
+    updatePreview();
+  });
+  document.getElementById('bodyColor').addEventListener('input', function() {
+    document.getElementById('bodyColorHex').textContent = this.value;
+    updatePreview();
+  });
+
+  // 실시간 미리보기 갱신 이벤트
+  ['inputText','fontSelect','lineSpacing','verseFontSize','bodyFontSize'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+    document.getElementById(id).addEventListener('change', updatePreview);
+  });
+
+  function parseSlides(text) {
+    const blocks = text.split(/\n{2,}/);
+    return blocks
+      .map(block => block.trim())
+      .filter(block => block.length > 0)
+      .map(block => {
+        const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        return { verse: lines[0] || '', body: lines.slice(1) };
+      });
+  }
+
+  function updatePreview() {
+    const text = document.getElementById('inputText').value;
+    const font = document.getElementById('fontSelect').value;
+    const lineSpacing = parseFloat(document.getElementById('lineSpacing').value);
+    const verseSizePt = parseInt(document.getElementById('verseFontSize').value) || 24;
+    const bodySizePt = parseInt(document.getElementById('bodyFontSize').value) || 32;
+    const verseColor = document.getElementById('verseColor').value;
+    const bodyColor = document.getElementById('bodyColor').value;
+
+    const slides = parseSlides(text);
+    const area = document.getElementById('previewArea');
+
+    if (slides.length === 0) {
+      area.innerHTML = '<div class="no-slides">텍스트를 입력하면 미리보기가 표시됩니다.</div>';
+      return;
+    }
+
+    // 미리보기에서 pt → 상대 크기(vw 기준) 근사 변환 (16:9 슬라이드 기준 10인치 너비)
+    const previewWidth = area.clientWidth || 400;
+    const scaleFactor = previewWidth / (10 * 96); // 10inch * 96dpi
+
+    const versePx = verseSizePt * scaleFactor * 1.5;
+    const bodyPx = bodySizePt * scaleFactor * 1.5;
+
+    area.innerHTML = slides.map((slide, i) => {
+      const bodyHtml = slide.body.map(line =>
+        `<p style="line-height:${lineSpacing}; margin-bottom:${(lineSpacing - 1) * 0.3}em;">${escHtml(line)}</p>`
+      ).join('');
+
+      const bgStyle = bgDataUrl
+        ? `background-image: url('${bgDataUrl}'); background-size: cover; background-position: center;`
+        : 'background-color: #111;';
+
+      return `
+        <div class="slide-preview">
+          <div class="slide-bg" style="${bgStyle}"></div>
+          <div class="slide-bg-overlay"></div>
+          <div class="slide-content">
+            <div class="slide-verse" style="
+              font-family: '${font}', sans-serif;
+              font-size: ${versePx}px;
+              color: ${verseColor};
+              line-height: ${lineSpacing};
+            ">${escHtml(slide.verse)}</div>
+            <div class="slide-body" style="
+              font-family: '${font}', sans-serif;
+              font-size: ${bodyPx}px;
+              color: ${bodyColor};
+            ">${bodyHtml}</div>
+          </div>
+          <span class="slide-number">${i + 1} / ${slides.length}</span>
+        </div>`;
+    }).join('');
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  async function downloadPPT() {
+    const text = document.getElementById('inputText').value.trim();
+    if (!text) { alert('텍스트를 입력해주세요.'); return; }
+
+    const slides = parseSlides(text);
+    const font = document.getElementById('fontSelect').value;
+    const lineSpacing = parseFloat(document.getElementById('lineSpacing').value);
+    const verseSizePt = parseInt(document.getElementById('verseFontSize').value) || 24;
+    const bodySizePt = parseInt(document.getElementById('bodyFontSize').value) || 32;
+    const verseColorRaw = document.getElementById('verseColor').value.replace('#','');
+    const bodyColorRaw = document.getElementById('bodyColor').value.replace('#','');
+
+    const pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE'; // 16:9
+
+    for (const slide of slides) {
+      const s = pptx.addSlide();
+
+      // 배경
+      if (bgDataUrl) {
+        s.background = { data: bgDataUrl };
+      } else {
+        s.background = { color: '111111' };
+      }
+
+      // 구절 (상단, 오른쪽 정렬)
+      if (slide.verse) {
+        s.addText(slide.verse, {
+          x: 0.3, y: 0.2, w: '93%', h: 1.2,
+          fontSize: verseSizePt,
+          fontFace: font,
+          color: verseColorRaw,
+          bold: true,
+          align: 'right',
+          valign: 'top',
+          lineSpacingMultiple: lineSpacing,
+          wrap: true,
+        });
+      }
+
+      // 본문 (하단, 오른쪽 정렬)
+      if (slide.body.length > 0) {
+        const bodyLines = slide.body.map(line => ({
+          text: line + '\n',
+          options: {
+            fontSize: bodySizePt,
+            fontFace: font,
+            color: bodyColorRaw,
+            align: 'right',
+          }
+        }));
+
+        s.addText(bodyLines, {
+          x: 0.3, y: 1.6, w: '93%', h: 4.5,
+          fontSize: bodySizePt,
+          fontFace: font,
+          color: bodyColorRaw,
+          align: 'right',
+          valign: 'bottom',
+          lineSpacingMultiple: lineSpacing,
+          wrap: true,
+        });
+      }
+    }
+
+    await pptx.writeFile({ fileName: 'bible_slides.pptx' });
+  }
+
+  // 초기 미리보기
+  updatePreview();
+</script>
+</body>
+</html>

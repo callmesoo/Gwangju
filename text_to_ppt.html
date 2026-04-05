@@ -211,13 +211,13 @@
       border-radius: 20px;
     }
     .slides-wrapper {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 14px;
-      flex: 1;
       overflow-y: auto;
-      padding-right: 4px;
+      padding: 4px 2px;
       max-height: calc(100vh - 160px);
+      align-content: start;
     }
     .slides-wrapper::-webkit-scrollbar { width: 6px; }
     .slides-wrapper::-webkit-scrollbar-track { background: #0a1628; border-radius: 3px; }
@@ -230,7 +230,6 @@
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid #0f3460;
-      flex-shrink: 0;
     }
     .slide-bg {
       position: absolute;
@@ -349,15 +348,15 @@
       <div class="control-group">
         <label>구절 색상</label>
         <div class="color-row">
-          <input type="color" id="verseColor" value="#ffdd88">
-          <span class="color-hex" id="verseColorHex">#ffdd88</span>
+          <input type="color" id="verseColor" value="#000000">
+          <span class="color-hex" id="verseColorHex">#000000</span>
         </div>
       </div>
       <div class="control-group">
         <label>본문 색상</label>
         <div class="color-row">
-          <input type="color" id="bodyColor" value="#ffffff">
-          <span class="color-hex" id="bodyColorHex">#ffffff</span>
+          <input type="color" id="bodyColor" value="#000000">
+          <span class="color-hex" id="bodyColorHex">#000000</span>
         </div>
       </div>
     </div>
@@ -464,8 +463,11 @@
     // PPT 슬라이드 너비: LAYOUT_WIDE = 13.33인치
     // 1pt = 1/72인치, 1인치 = 96px (screen)
     // 실제 슬라이드 px = 13.33 * 96 ≈ 1280px
-    const previewWidth = area.clientWidth || 500;
-    const scale = previewWidth / 1280;
+    // 그리드 셀 너비: area 너비에서 gap 고려한 각 셀의 실제 너비 계산
+    const areaWidth = area.clientWidth || 600;
+    const cols = Math.max(1, Math.floor(areaWidth / 294)); // minmax(280px, 1fr) + gap
+    const cellWidth = (areaWidth - (cols - 1) * 14) / cols;
+    const scale = cellWidth / 1280;
     const versePx = versePt * (96 / 72) * scale;
     const bodyPx  = bodyPt  * (96 / 72) * scale;
 

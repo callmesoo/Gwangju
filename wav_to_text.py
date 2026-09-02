@@ -68,7 +68,7 @@ def main() -> int:
         "--output-dir",
         type=Path,
         default=None,
-        help="결과 .txt 파일을 저장할 디렉터리 (지정하지 않으면 표준 출력에만 출력)",
+        help="결과 .txt 파일을 저장할 디렉터리 (지정하지 않으면 wav 파일과 같은 위치에 저장)",
     )
     args = parser.parse_args()
 
@@ -99,10 +99,10 @@ def main() -> int:
         print(f"=== {wav_path} ===")
         print(text)
 
-        if args.output_dir:
-            out_path = args.output_dir / (wav_path.stem + ".txt")
-            out_path.write_text(text, encoding="utf-8")
-            print(f"-> 저장됨: {out_path}")
+        out_dir = args.output_dir if args.output_dir else wav_path.parent
+        out_path = out_dir / (wav_path.stem + ".txt")
+        out_path.write_text(text, encoding="utf-8")
+        print(f"-> 저장됨: {out_path}")
 
     return exit_code
 

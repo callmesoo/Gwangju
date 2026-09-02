@@ -17,7 +17,7 @@ Google Web Speech API 엔진(온라인)을 사용하려면 `requirements.txt`에
 ### 사용법
 
 ```bash
-# 오프라인 whisper 엔진 사용 (기본값)
+# 오프라인 whisper 엔진 사용 (기본값). 결과는 audio.txt로 같은 위치에 저장됨
 python wav_to_text.py audio.wav
 
 # whisper 모델 크기 지정 (tiny/base/small/medium/large, 기본값: base)

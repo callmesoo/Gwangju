@@ -2,12 +2,13 @@
 """WAV 오디오 파일을 텍스트로 변환하는 CLI 도구.
 
 두 가지 변환 엔진을 지원한다:
-  - google  : SpeechRecognition + Google Web Speech API (인터넷 필요, API 키 불필요)
-  - whisper : OpenAI Whisper (오프라인, 별도 설치 필요: pip install openai-whisper)
+  - whisper : OpenAI Whisper (오프라인, 기본값. 설치 필요: pip install openai-whisper + ffmpeg)
+  - google  : SpeechRecognition + Google Web Speech API (인터넷 필요, API 키 불필요하지만
+              비공식 무료 엔드포인트라 최근 'Bad Request'로 자주 실패함)
 
 사용 예:
   python wav_to_text.py audio.wav
-  python wav_to_text.py audio.wav --engine whisper --language ko
+  python wav_to_text.py audio.wav --engine google --language ko-KR
   python wav_to_text.py *.wav --output-dir transcripts
 """
 
@@ -49,8 +50,8 @@ def main() -> int:
     parser.add_argument(
         "--engine",
         choices=["google", "whisper"],
-        default="google",
-        help="사용할 음성 인식 엔진 (기본값: google)",
+        default="whisper",
+        help="사용할 음성 인식 엔진 (기본값: whisper)",
     )
     parser.add_argument(
         "--language",
@@ -86,6 +87,12 @@ def main() -> int:
             text = transcribe(wav_path, args.engine, args.language, args.model_size)
         except Exception as exc:  # noqa: BLE001 - CLI 도구이므로 모든 실패를 사용자에게 보여준다
             print(f"[오류] {wav_path} 변환 실패: {exc}", file=sys.stderr)
+            if args.engine == "google" and "request failed" in str(exc).lower():
+                print(
+                    "  힌트: google 엔진은 비공식 무료 API라 요즘 자주 'Bad Request'로 "
+                    "실패합니다. --engine whisper 로 다시 시도해보세요.",
+                    file=sys.stderr,
+                )
             exit_code = 1
             continue
 

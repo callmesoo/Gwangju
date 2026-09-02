@@ -1,0 +1,3 @@
+SpeechRecognition>=3.10.0
+# whisper 엔진을 사용하려면 아래 주석을 해제하세요 (오프라인 변환, 더 무거움).
+# openai-whisper
